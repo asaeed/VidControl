@@ -11,6 +11,7 @@
 
 var ww, wh, mx, my;
 var vid = document.getElementById('v0');
+vid.isTweening = false;
 
 window.onload = setup;
 
@@ -22,19 +23,36 @@ function setup() {
 
     window.addEventListener('mousemove', onMouseMove, false);
 
-    window.requestAnimationFrame(update);
+    //window.requestAnimationFrame(update);
+    window.setInterval(update, 100);
 }
 
 function update() {
+
+    if (vid.isTweening) return;
+
     var newTime = 0;
     if (mx > 1) newTime = mx/ww * vid.duration;
 
     if (vid.currentTime != Math.floor(newTime*1000000)/1000000) {
-        vid.currentTime = newTime;
-        //console.log(vid.currentTime + ' - ' + newTime);
+        //vid.currentTime = newTime;
+
+        TweenMax.to(vid, 0.1, { 
+            currentTime: newTime, 
+            ease: Power2.easeOut,
+            onStart: function() {
+                console.log('starting ' + vid.isTweening)
+                vid.isTweening = true;
+            },
+            onComplete: function() {
+                console.log('ending ' + vid.isTweening)
+                vid.isTweening = false;
+                console.log(vid.currentTime + ' - ' + newTime);
+            } 
+        });
     }
 
-    window.requestAnimationFrame(update);
+    
 }
 
 function onVideoLoad() {
