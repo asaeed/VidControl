@@ -3,7 +3,7 @@
 
   .ogv format seems to perform the best when rapidly setting currentTime
   to convert to high quality ogv, use:
-  
+
   brew install --with-theora --with-libvorbis ffmpeg
   ffmpeg -i test.mov -c:v libtheora -c:a libvorbis -q:v 10 -q:a 10 test.ogv
 
@@ -18,11 +18,27 @@ function setup() {
     ww = window.innerWidth;
     wh = window.innerHeight;
 
+    setupWebSocket();
     vid.addEventListener('loadedmetadata', onVideoLoad, false);
-
-    window.addEventListener('mousemove', onMouseMove, false);
-
     window.requestAnimationFrame(update);
+}
+
+function setupWebSocket() {
+    ws = new WebSocket("ws://localhost:8181/");
+
+    ws.onopen = function() {
+      ws.send("Message to send");
+      console.log("Message is sent...");
+    };
+
+    ws.onmessage = function(e) {
+      var data = JSON.parse(e.data);
+      mx = (data.X + (data.W/2))/640 * ww;
+    };
+
+    ws.onclose = function() {
+      console.log("Connection is closed...");
+    };
 }
 
 function update() {
@@ -31,7 +47,7 @@ function update() {
 
     if (vid.currentTime != Math.floor(newTime*1000000)/1000000) {
         vid.currentTime = newTime;
-        //console.log(vid.currentTime + ' - ' + newTime);
+        console.log(vid.currentTime + ' - ' + newTime);
     }
 
     window.requestAnimationFrame(update);
@@ -41,7 +57,7 @@ function onVideoLoad() {
     console.log('vid length: ' + vid.duration);
 }
 
-function onMouseMove(e) {
-    mx = e.clientX;
-    my = e.clientY;
-}
+// function onMouseMove(e) {
+//     mx = e.clientX;
+//     my = e.clientY;
+// }
